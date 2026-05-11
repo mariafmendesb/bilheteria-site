@@ -17,7 +17,7 @@ function App() {
   const [filmes, setFilmes] = useState([]);
   const [pesquisa, setPesquisa] = useState('');
   const [filmeSelecionado, setFilmeSelecionado] = useState(null);
-  const [atorSelecionado, setAtorSelecionado] = useState(null); // NOVO: Guarda o ator clicado
+  const [atorSelecionado, setAtorSelecionado] = useState(null);
   const [carregando, setCarregando] = useState(false);
   const [verFavoritos, setVerFavoritos] = useState(false);
   
@@ -85,6 +85,13 @@ function App() {
     setTimeout(() => setToast({ visivel: false, mensagem: '' }), 3000);
   };
 
+  const voltarAoInicio = () => {
+    setVerFavoritos(false);
+    setPesquisa('');
+    setMostrarSugestoes(false);
+    buscarFilmes(1, { tipo: 'popular', valor: null });
+  };
+
   const estaFavoritado = (id) => Object.values(favoritos).some(pasta => pasta.some(f => f.id === id));
 
   const favoritarOuPerguntar = (filme) => {
@@ -143,9 +150,7 @@ function App() {
     let todosFilmes = [];
     Object.values(favoritos).forEach(pasta => { todosFilmes = [...todosFilmes, ...pasta]; });
     
-    // Remove possíveis duplicatas para estatística real
     const filmesUnicos = Array.from(new Set(todosFilmes.map(f => f.id))).map(id => todosFilmes.find(f => f.id === id));
-    
     const total = filmesUnicos.length;
     
     const filmesComNota = filmesUnicos.filter(f => f.minhaNota > 0);
@@ -210,7 +215,6 @@ function App() {
     } catch (e) { console.error(e); }
   };
 
-  // NOVO: Busca dados de um ator específico
   const buscarDetalhesAtor = async (idAtor) => {
     try {
       const chaveAPI = import.meta.env.VITE_TMDB_API_KEY;
@@ -241,7 +245,7 @@ function App() {
 
   const abrirModal = (filme) => {
     setFilmeSelecionado(filme);
-    setAtorSelecionado(null); // Limpa o ator se abrir um novo filme
+    setAtorSelecionado(null);
     buscarDadosExtras(filme.id);
     let filmeFav = null;
     Object.values(favoritos).forEach(pasta => {
@@ -305,7 +309,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1 onClick={() => window.location.reload()} style={{cursor:'pointer'}}>
+      <h1 onClick={voltarAoInicio} style={{cursor:'pointer'}}>
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginRight:'10px'}}>
           <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M7 3v18M17 3v18M3 7h4M3 12h18M3 17h4M17 7h4M17 17h4"/>
         </svg>
@@ -313,7 +317,7 @@ function App() {
       </h1>
       
       <nav className="menu">
-        <button className={!verFavoritos ? 'ativo' : ''} onClick={() => setVerFavoritos(false)}>Início</button>
+        <button className={!verFavoritos ? 'ativo' : ''} onClick={voltarAoInicio}>Início</button>
         <button className={verFavoritos ? 'ativo' : ''} onClick={() => setVerFavoritos(true)}>Meus Favoritos</button>
       </nav>
 
@@ -372,7 +376,6 @@ function App() {
       ) : (
         <div className="aba-favoritos-container">
           
-          {/* NOVO: DASHBOARD DE ESTATÍSTICAS */}
           <div className="estatisticas-dashboard">
             <div className="estatistica-card">
               <h3>{calcularEstatisticas().total}</h3>
@@ -451,7 +454,6 @@ function App() {
           <div className="modal-conteudo" onClick={e => e.stopPropagation()}>
             <button className="botao-fechar" onClick={fecharModal}>&times;</button>
             
-            {/* SE O ATOR ESTIVER SELECIONADO, MOSTRA A TELA DELE */}
             {atorSelecionado ? (
               <div className="perfil-ator-modal">
                 <button className="btn-voltar-filme" onClick={() => setAtorSelecionado(null)}>
@@ -481,7 +483,6 @@ function App() {
                 )}
               </div>
             ) : (
-              /* CASO CONTRÁRIO, MOSTRA OS DETALHES DO FILME NORMALMENTE */
               <div className="modal-detalhes">
                 <img src={`https://image.tmdb.org/t/p/w500${filmeSelecionado.poster_path}`} alt="" />
                 <div className="modal-texto">
@@ -575,7 +576,7 @@ function App() {
         </div>
       )}
       <div className={`toast-notificacao ${toast.visivel ? 'mostrar' : ''}`}>{toast.mensagem}</div>
-      <footer className="footer"><p>Desenvolvido com carinho por Maria</p></footer>
+      <footer className="footer"><p>Desenvolvido por Maria</p></footer>
     </div>
   );
 }
